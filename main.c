@@ -6,6 +6,11 @@
 #include "opengl.h"
 
 // Variáveis globais a serem utilizadas:
+typedef struct
+{
+    int quantidadeIgual;
+    RGB8 cor;
+} Cell;
 
 // Dimensões da imagem de entrada
 int sizeX, sizeY;
