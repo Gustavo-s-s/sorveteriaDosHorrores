@@ -67,6 +67,32 @@ int containsCell(Cell *source, int size, RGB8 target)
     return -1;
 }
 
+Cell *filter(Cell *source, int size, int quantidadeDeCores)
+{
+    Cell *cells = malloc(sizeof(Cell) * quantidadeDeCores);
+
+    for (int i = 0; i < size; i++)
+    {
+        const int quant = source[i].quantidadeIgual;
+
+        if (i < quantidadeDeCores)
+        {
+            cells[i] = source[i];
+        }
+        else
+        {
+            int index = findIndexOfLessDistance(cells, quantidadeDeCores, source[i].cor);
+
+            if (quant > cells[index].quantidadeIgual)
+            {
+                cells[index] = source[i];
+            }
+        }
+    }
+
+    return cells;
+}
+
 // Carrega uma imagem para a struct Img
 void load(char* name, Image24* pic)
 {
