@@ -28,6 +28,30 @@ int modo;
 void load(char* name, Image24* pic);
 void process();
 
+int calcDistance(RGB8 color, RGB8 comparator)
+{
+    int squeredDeltaR = pow((color.r - comparator.r), 2);
+    int squeredDeltaG = pow((color.g - comparator.g), 2);
+    int squeredDeltaB = pow((color.b - comparator.b), 2);
+
+    int cate = squeredDeltaR + squeredDeltaG + squeredDeltaB;
+    return sqrt(cate);
+}
+
+int findIndexOfLessDistance(Cell *source, int size, RGB8 target)
+{
+    int indexOflessDistance = 0;
+    for (int i = 1; i < size; i++)
+    {
+        int firstDist = calcDistance(target, source[indexOflessDistance].cor);
+        int secondDist = calcDistance(target, source[i].cor);
+
+        if (firstDist > secondDist)
+            indexOflessDistance = i;
+    }
+    return indexOflessDistance;
+}
+
 // Carrega uma imagem para a struct Img
 void load(char* name, Image24* pic)
 {
@@ -51,35 +75,9 @@ void process()
     //
     // SUBSTITUA este código pelos algoritmos a serem implementados
     //
-    unsigned int pos = 0;
-    unsigned char r = 0;
-    for(int y=0; y<sizeY; y++) {
-        if (y>sizeY/4)
-            r = 1;
-        if (y>sizeY/2)
-            r = 2;
-        if (y>sizeY-sizeY/4)
-        {
-            r = 3;
-        }
-        for(int x=0; x<sizeX; x++) {
-            pic8.pixels[pos] = r;
-            pos++;
-        }
-    }
+
     // Exemplo: imagem de 8 bits (com outras cores, para testar)
-    pic8.pal[0].r = 200;
-    pic8.pal[0].g = 0;
-    pic8.pal[0].b = 0;
-    pic8.pal[1].r = 0;
-    pic8.pal[1].g = 200;
-    pic8.pal[1].b = 0;
-    pic8.pal[2].r = 0;
-    pic8.pal[2].g = 0;
-    pic8.pal[2].b = 200;
-    pic8.pal[3].r = 200;
-    pic8.pal[3].g = 120;
-    pic8.pal[3].b = 0;
+ 
 
     //
     // NÃO ALTERAR A PARTIR DAQUI!!!!
