@@ -52,6 +52,21 @@ int findIndexOfLessDistance(Cell *source, int size, RGB8 target)
     return indexOflessDistance;
 }
 
+int containsCell(Cell *source, int size, RGB8 target)
+{
+    for (int i = 0; i < size; i++)
+    {
+        char r = source[i].cor.r;
+        char g = source[i].cor.g;
+        char b = source[i].cor.b;
+
+        if (target.r == r && target.g == g && target.b == b)
+            return i;
+    }
+
+    return -1;
+}
+
 // Carrega uma imagem para a struct Img
 void load(char* name, Image24* pic)
 {
