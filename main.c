@@ -93,6 +93,43 @@ Cell *filter(Cell *source, int size, int quantidadeDeCores)
     return cells;
 }
 
+Cell *findTheMostPopularCells(int quantyOfColors, RGB8 *colors, int size)
+{
+    Cell *cells = malloc(sizeof(Cell) * (sizeX * sizeY));
+    int sizeOfCells = 0;
+
+    for (int i = 0; i < size; i++)
+    {
+        if (i == 0)
+        {
+            cells[i].cor = colors[i];
+            cells[i].quantidadeIgual = 0;
+            sizeOfCells++;
+            continue;
+        }
+
+        int cellIndex = containsCell(cells, sizeOfCells, colors[i]);
+        if (cellIndex < 0)
+        {
+            cells[sizeOfCells].cor = colors[i];
+            cells[sizeOfCells].quantidadeIgual = 0;
+            sizeOfCells++;
+        }
+        else
+        {
+            cells[cellIndex].quantidadeIgual += 1;
+        }
+    }
+
+    return filter(cells, sizeOfCells, quantyOfColors);
+}
+
+void loadPall(Cell *colors, int size)
+{
+    for (int i = 0; i < size; i++)
+        pic8.pal[i] = colors[i].cor;
+}
+
 // Carrega uma imagem para a struct Img
 void load(char* name, Image24* pic)
 {
@@ -116,7 +153,14 @@ void process()
     //
     // SUBSTITUA este código pelos algoritmos a serem implementados
     //
+    int quantidadeDeCores = 256;
+    Cell *cells = findTheMostPopularCells(quantidadeDeCores, pic.pixels, sizeX * sizeY);
+    loadPall(cells, quantidadeDeCores);
 
+    for (int i = 0; i < sizeX * sizeY; i++)
+    {
+        pic8.pixels[i] = findIndexOfLessDistance(cells, quantidadeDeCores, pic.pixels[i]);
+    }
     // Exemplo: imagem de 8 bits (com outras cores, para testar)
  
 
