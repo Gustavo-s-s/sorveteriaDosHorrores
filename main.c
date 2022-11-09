@@ -28,6 +28,12 @@ int modo;
 void load(char *name, Image24 *pic);
 void process();
 
+Cell createNewCell(RGB8 color)
+{
+    Cell cell = {0, color};
+    return cell;
+}
+
 double calcDistance(RGB8 color, RGB8 comparator)
 {
     double squeredDeltaR = pow((color.r - comparator.r), 2);
@@ -52,50 +58,58 @@ int findIndexOfLessDistance(Cell *source, int size, RGB8 target)
     return indexOflessDistance;
 }
 
-int indexOfCell(Cell *source, int size, RGB8 target)
+void loadPall(Cell *colors, int size)
 {
     for (int i = 0; i < size; i++)
-    {
-        if (calcDistance(source[i].cor, target) < 30)
+        pic8.pal[i] = colors[i].cor;
+}
+
+void generateNewImage(Cell *cells, int quantidadeDeCores)
+{
+    for (int i = 0; i < sizeX * sizeY; i++)
+        pic8.pixels[i] = findIndexOfLessDistance(cells, quantidadeDeCores, pic.pixels[i]);
+}
+
+int indexOfCellWithTolerance(Cell *source, int size, RGB8 target, int tolerace)
+{
+    for (int i = 0; i < size; i++) 
+        if (calcDistance(source[i].cor, target) < tolerace)
             return i;
-    }
 
     return -1;
 }
 
 // filtra cores mais populares
-Cell *filterByPopularity(Cell *source, int size, int quantidadeDeCores)
+void *filterByHighPopularity(Cell *source, int size, int newSizeOfSource)
 {
-    Cell *cells = malloc(sizeof(Cell) * quantidadeDeCores);
+    Cell *cells = malloc(sizeof(Cell) * newSizeOfSource);
 
     for (int i = 0; i < size; i++)
     {
-        const int quant = source[i].quantity;
+        const int QUANTITY = source[i].quantity;
 
-        if (i < quantidadeDeCores)
+        if (i < newSizeOfSource)
         {
             cells[i] = source[i];
+            continue;
         }
-        else
-        {
-            int index = 0;
-            for (int j = 0; j < quantidadeDeCores; j++)
-            {
-                if (cells[index].quantity < cells[j].quantity)
-                    index = j;
-            }
 
-            if (quant > cells[index].quantity)
-            {
-                cells[index] = source[i];
-            }
-        }
+        int index = 0;
+        for (int j = 0; j < newSizeOfSource; j++)
+            if (cells[index].quantity < cells[j].quantity)
+                index = j;
+
+        if (QUANTITY > cells[index].quantity)
+            cells[index] = source[i];
     }
 
-    return cells;
+    source = cells;
 }
-// encontra e agrupa as cores mais populares
-Cell *groupBy(int quantyOfColors, RGB8 *colors, int size)
+
+
+
+// agrupa as cores por uma determinada proximidade (tolerance)
+Cell *groupingByCloserColor(RGB8 *colors, int size, int tolerance, int *newSize)
 {
     Cell *cells = malloc(sizeof(Cell) * (sizeX * sizeY));
     int sizeOfCells = 0;
@@ -104,40 +118,22 @@ Cell *groupBy(int quantyOfColors, RGB8 *colors, int size)
     {
         if (i == 0)
         {
-            cells[i].cor = colors[i];
-            cells[i].quantity = 0;
-            sizeOfCells++;
+            cells[sizeOfCells++] = createNewCell(colors[i]);
             continue;
         }
 
-        int cellIndex = indexOfCell(cells, sizeOfCells, colors[i]);
+        int cellIndex = indexOfCellWithTolerance(cells, sizeOfCells, colors[i], tolerance);
         if (cellIndex < 0)
-        {
-            cells[sizeOfCells].cor = colors[i];
-            cells[sizeOfCells].quantity = 0;
-            sizeOfCells++;
-        }
+            cells[sizeOfCells++] = createNewCell(colors[i]);
         else
-        {
-            cells[cellIndex].quantity += 1;
-        }
+            cells[cellIndex].quantity++;
     }
 
-    return filterByPopularity(cells, sizeOfCells, quantyOfColors);
+    *newSize = sizeOfCells;
+    return cells;
 }
 
-void loadPall(Cell *colors, int size)
-{
-    for (int i = 0; i < size; i++) 
-        pic8.pal[i] = colors[i].cor;
-    
-}
 
-void generateNewImage(Cell *cells, int quantidadeDeCores)
-{
-    for (int i = 0; i < sizeX * sizeY; i++)
-        pic8.pixels[i] = findIndexOfLessDistance(cells, quantidadeDeCores, pic.pixels[i]);
-}
 
 // Carrega uma imagem para a struct Img
 void load(char *name, Image24 *pic)
@@ -162,10 +158,15 @@ void process()
     //
     // SUBSTITUA este código pelos algoritmos a serem implementados
     //
-    int quantidadeDeCores = 256;
-    Cell *cells = groupBy(quantidadeDeCores, pic.pixels, sizeX * sizeY);
-    loadPall(cells, quantidadeDeCores);
-    generateNewImage(cells, quantidadeDeCores);
+    const int QUANTITY_OF_UNIQUE_COLORS = 256;
+    const int TOLERANCE = 24;
+    const int TOTAL_SIZE_OF_IMAGE = sizeX * sizeY;
+    int size;
+
+    Cell *cells = groupingByCloserColor(pic.pixels, TOTAL_SIZE_OF_IMAGE, TOLERANCE, &size);
+    filterByHighPopularity(cells, size, QUANTITY_OF_UNIQUE_COLORS);
+    loadPall(cells, QUANTITY_OF_UNIQUE_COLORS);
+    generateNewImage(cells, QUANTITY_OF_UNIQUE_COLORS);
 
     // Exemplo: imagem de 8 bits (com outras cores, para testar)
     //
