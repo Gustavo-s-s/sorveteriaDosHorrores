@@ -159,7 +159,7 @@ void process()
     // SUBSTITUA este código pelos algoritmos a serem implementados
     //
     const int QUANTITY_OF_UNIQUE_COLORS = 256;
-    const int TOLERANCE = 24;
+    const int TOLERANCE = 50;
     const int TOTAL_SIZE_OF_IMAGE = sizeX * sizeY;
     int size;
 
